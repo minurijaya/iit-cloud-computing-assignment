@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: patient-service
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: patient-service
@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: patient-service
-        image: patient-service:latest
+        image: minurijayasooriya97/patient-service:latest
         ports:
         - containerPort: 3000
         env:
