@@ -35,7 +35,7 @@ spec:
         - name: DB_NAME
           value: mydb
         - name: PORT
-          value: 3001
+          value: "3001"
         resources:
           limits:
             cpu: "0.5"
