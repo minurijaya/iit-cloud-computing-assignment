@@ -5,7 +5,7 @@ metadata:
   labels:
     app: doctor-service
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   ports:
   - port: 3001
     targetPort: 3001

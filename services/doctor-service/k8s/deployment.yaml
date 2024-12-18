@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: doctor-service
-        image: doctor-service:latest
+        image: minurijayasooriya97/doctor-service:latest
         imagePullPolicy: Never
         ports:
         - containerPort: 3001
