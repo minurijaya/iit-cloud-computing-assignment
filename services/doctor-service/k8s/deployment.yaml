@@ -33,9 +33,9 @@ spec:
               name: mysql-secret
               key: password
         - name: DB_NAME
-          value: healthcare_doctors
+          value: mydb
         - name: PORT
-          value: "3001"
+          value: "3306"
         resources:
           limits:
             cpu: "0.5"
