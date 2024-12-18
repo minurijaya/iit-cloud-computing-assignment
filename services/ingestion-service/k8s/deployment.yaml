@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingestion-service
+  labels:
+    app: ingestion-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ingestion-service
+  template:
+    metadata:
+      labels:
+        app: ingestion-service
+    spec:
+      containers:
+      - name: ingestion-service
+        image: minurijayasooriya97/ingestion-service:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: AWS_REGION
+          valueFrom:
+            secretKeyRef:
+              name: aws-secret
+              key: region
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-secret
+              key: access_key_id
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: aws-secret
+              key: secret_access_key
+        - name: REDSHIFT_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: redshift-secret
+              key: database
+        - name: REDSHIFT_SECRET_ARN
+          valueFrom:
+            secretKeyRef:
+              name: redshift-secret
+              key: secret_arn
+        - name: REDSHIFT_CLUSTER_IDENTIFIER
+          valueFrom:
+            secretKeyRef:
+              name: redshift-secret
+              key: cluster_identifier
+        - name: PORT
+          value: "3000"
+        resources:
+          limits:
+            cpu: "0.5"
+            memory: "512Mi"
+          requests:
+            cpu: "0.2"
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 10
