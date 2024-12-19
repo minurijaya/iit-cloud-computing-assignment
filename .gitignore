@@ -130,3 +130,15 @@ dist
 .pnp.*
 
 credentials
+
+# Infrastructure Secrets
+infrastructure/k8s/*-secret.yaml
+infrastructure/k8s/secrets/
+
+# Environment Files
+**/.env
+**/.env.*
+!**/.env.example
+
+# Keep example secret templates
+!infrastructure/k8s/*-secret.example.yaml

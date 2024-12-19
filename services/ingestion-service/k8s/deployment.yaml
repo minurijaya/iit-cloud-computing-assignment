@@ -23,33 +23,33 @@ spec:
         - name: AWS_REGION
           valueFrom:
             secretKeyRef:
-              name: aws-secret
-              key: region
+              name: aws-credentials
+              key: AWS_REGION
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
-              name: aws-secret
-              key: access_key_id
+              name: aws-credentials
+              key: AWS_ACCESS_KEY_ID
         - name: AWS_SECRET_ACCESS_KEY
           valueFrom:
             secretKeyRef:
-              name: aws-secret
-              key: secret_access_key
+              name: aws-credentials
+              key: AWS_SECRET_ACCESS_KEY
         - name: REDSHIFT_DATABASE
           valueFrom:
             secretKeyRef:
               name: redshift-secret
-              key: database
+              key: REDSHIFT_DATABASE
         - name: REDSHIFT_SECRET_ARN
           valueFrom:
             secretKeyRef:
               name: redshift-secret
-              key: secret_arn
-        - name: REDSHIFT_CLUSTER_IDENTIFIER
+              key: REDSHIFT_SECRET_ARN
+        - name: REDSHIFT_WORKGROUP_NAME
           valueFrom:
             secretKeyRef:
               name: redshift-secret
-              key: cluster_identifier
+              key: REDSHIFT_WORKGROUP_NAME
         - name: PORT
           value: "3000"
         resources:
