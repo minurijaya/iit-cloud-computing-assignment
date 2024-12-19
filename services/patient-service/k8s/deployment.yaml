@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: patient-service
-        image: minurijayasooriya97/patient-service:latest
+        image: minurijayasooriya97/patient-service:v1.0.0
         ports:
         - containerPort: 3000
         env:
