@@ -36,6 +36,8 @@ spec:
           value: mydb
         - name: PORT
           value: "3000"
+        - name: INGESTION_SERVICE_URL
+          value: "http://ingestion-service:3000"
         resources:
           limits:
             cpu: "0.5"

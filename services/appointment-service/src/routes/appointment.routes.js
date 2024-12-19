@@ -3,6 +3,9 @@ const router = express.Router();
 const Appointment = require('../models/appointment.model');
 const { validateAppointment } = require('../validators/appointment.validator');
 const { Op } = require('sequelize');
+const IngestionClient = require('../../../shared/ingestion-client');
+
+const ingestionClient = new IngestionClient();
 
 // Get all appointments
 router.get('/', async (req, res) => {
@@ -59,6 +62,24 @@ router.get('/search/date', async (req, res) => {
 router.post('/', validateAppointment, async (req, res) => {
   try {
     const appointment = await Appointment.create(req.body);
+    
+    // Send to ingestion service
+    try {
+      await ingestionClient.ingestData('appointments', {
+        id: appointment.id,
+        doctor_id: appointment.doctorId,
+        patient_id: appointment.patientId,
+        appointment_date: appointment.appointmentDate,
+        status: appointment.status,
+        notes: appointment.notes,
+        created_at: appointment.createdAt,
+        updated_at: appointment.updatedAt
+      });
+    } catch (ingestionError) {
+      console.error('Error ingesting appointment data:', ingestionError);
+      // Continue with the response even if ingestion fails
+    }
+    
     res.status(201).json(appointment);
   } catch (error) {
     console.error('Error creating appointment:', error);
@@ -79,8 +100,27 @@ router.put('/:id', validateAppointment, async (req, res) => {
     if (!updated) {
       return res.status(404).json({ error: 'Appointment not found' });
     }
-    const updatedAppointment = await Appointment.findByPk(req.params.id);
-    res.json(updatedAppointment);
+    
+    const appointment = await Appointment.findByPk(req.params.id);
+    
+    // Send to ingestion service
+    try {
+      await ingestionClient.ingestData('appointments', {
+        id: appointment.id,
+        doctor_id: appointment.doctorId,
+        patient_id: appointment.patientId,
+        appointment_date: appointment.appointmentDate,
+        status: appointment.status,
+        notes: appointment.notes,
+        created_at: appointment.createdAt,
+        updated_at: appointment.updatedAt
+      });
+    } catch (ingestionError) {
+      console.error('Error ingesting updated appointment data:', ingestionError);
+      // Continue with the response even if ingestion fails
+    }
+    
+    res.json(appointment);
   } catch (error) {
     console.error('Error updating appointment:', error);
     if (error.name === 'SequelizeUniqueConstraintError') {
@@ -94,13 +134,29 @@ router.put('/:id', validateAppointment, async (req, res) => {
 // Delete appointment
 router.delete('/:id', async (req, res) => {
   try {
-    const deleted = await Appointment.destroy({
-      where: { id: req.params.id }
-    });
-    if (!deleted) {
+    const appointment = await Appointment.findByPk(req.params.id);
+    if (!appointment) {
       return res.status(404).json({ error: 'Appointment not found' });
     }
-    res.status(204).send();
+
+    await Appointment.destroy({
+      where: { id: req.params.id }
+    });
+
+    // Send deletion event to ingestion service
+    try {
+      await ingestionClient.ingestData('appointment_deletions', {
+        id: appointment.id,
+        doctor_id: appointment.doctorId,
+        patient_id: appointment.patientId,
+        deleted_at: new Date().toISOString()
+      });
+    } catch (ingestionError) {
+      console.error('Error ingesting appointment deletion:', ingestionError);
+      // Continue with the response even if ingestion fails
+    }
+
+    res.json({ message: 'Appointment deleted successfully' });
   } catch (error) {
     console.error('Error deleting appointment:', error);
     res.status(500).json({ error: 'Error deleting appointment' });

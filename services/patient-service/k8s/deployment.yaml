@@ -34,6 +34,8 @@ spec:
             secretKeyRef:
               name: mysql-secret
               key: password
+        - name: INGESTION_SERVICE_URL
+          value: "http://ingestion-service:3000"
         livenessProbe:
           httpGet:
             path: /health
