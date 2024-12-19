@@ -1,51 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const Appointment = require('../models/appointment.model');
-const { appointmentSchema, validateRequest } = require('../validators/appointment.validator');
-const logger = require('../utils/logger');
+const { validateAppointment } = require('../validators/appointment.validator');
+const { Op } = require('sequelize');
 
-// Create a new appointment
-router.post('/', validateRequest(appointmentSchema.create), async (req, res) => {
+// Get all appointments
+router.get('/', async (req, res) => {
   try {
-    const appointment = await Appointment.create(req.body);
-    logger.info('Appointment created successfully', { appointmentId: appointment.id });
-    res.status(201).json({
-      status: 'success',
-      data: appointment
-    });
+    const appointments = await Appointment.findAll();
+    res.json(appointments);
   } catch (error) {
-    logger.error('Error creating appointment', { error: error.message });
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to create appointment'
-    });
-  }
-});
-
-// Get appointments by date range
-router.get('/range', validateRequest(appointmentSchema.getByDateRange), async (req, res) => {
-  try {
-    const { startDate, endDate, doctorId, patientId } = req.query;
-    const where = {
-      appointmentDate: {
-        [Op.between]: [startDate, endDate]
-      }
-    };
-
-    if (doctorId) where.doctorId = doctorId;
-    if (patientId) where.patientId = patientId;
-
-    const appointments = await Appointment.findAll({ where });
-    res.json({
-      status: 'success',
-      data: appointments
-    });
-  } catch (error) {
-    logger.error('Error fetching appointments', { error: error.message });
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to fetch appointments'
-    });
+    console.error('Error fetching appointments:', error);
+    res.status(500).json({ error: 'Error fetching appointments' });
   }
 });
 
@@ -54,73 +20,90 @@ router.get('/:id', async (req, res) => {
   try {
     const appointment = await Appointment.findByPk(req.params.id);
     if (!appointment) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'Appointment not found'
-      });
+      return res.status(404).json({ error: 'Appointment not found' });
     }
-    res.json({
-      status: 'success',
-      data: appointment
-    });
+    res.json(appointment);
   } catch (error) {
-    logger.error('Error fetching appointment', { error: error.message });
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to fetch appointment'
-    });
+    console.error('Error fetching appointment:', error);
+    res.status(500).json({ error: 'Error fetching appointment' });
+  }
+});
+
+// Get appointments by date range and optional doctor/patient ID
+router.get('/search/date', async (req, res) => {
+  try {
+    const { startDate, endDate, doctorId, patientId } = req.query;
+    
+    if (!startDate || !endDate) {
+      return res.status(400).json({ error: 'Start date and end date are required' });
+    }
+
+    const where = {
+      appointmentDate: {
+        [Op.between]: [new Date(startDate), new Date(endDate)]
+      }
+    };
+
+    if (doctorId) where.doctorId = doctorId;
+    if (patientId) where.patientId = patientId;
+
+    const appointments = await Appointment.findAll({ where });
+    res.json(appointments);
+  } catch (error) {
+    console.error('Error searching appointments:', error);
+    res.status(500).json({ error: 'Error searching appointments' });
+  }
+});
+
+// Create new appointment
+router.post('/', validateAppointment, async (req, res) => {
+  try {
+    const appointment = await Appointment.create(req.body);
+    res.status(201).json(appointment);
+  } catch (error) {
+    console.error('Error creating appointment:', error);
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      res.status(400).json({ error: 'This time slot is already booked' });
+    } else {
+      res.status(500).json({ error: 'Error creating appointment' });
+    }
   }
 });
 
 // Update appointment
-router.put('/:id', validateRequest(appointmentSchema.update), async (req, res) => {
+router.put('/:id', validateAppointment, async (req, res) => {
   try {
-    const appointment = await Appointment.findByPk(req.params.id);
-    if (!appointment) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'Appointment not found'
-      });
+    const [updated] = await Appointment.update(req.body, {
+      where: { id: req.params.id }
+    });
+    if (!updated) {
+      return res.status(404).json({ error: 'Appointment not found' });
     }
-
-    await appointment.update(req.body);
-    logger.info('Appointment updated successfully', { appointmentId: appointment.id });
-    res.json({
-      status: 'success',
-      data: appointment
-    });
+    const updatedAppointment = await Appointment.findByPk(req.params.id);
+    res.json(updatedAppointment);
   } catch (error) {
-    logger.error('Error updating appointment', { error: error.message });
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to update appointment'
-    });
+    console.error('Error updating appointment:', error);
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      res.status(400).json({ error: 'This time slot is already booked' });
+    } else {
+      res.status(500).json({ error: 'Error updating appointment' });
+    }
   }
 });
 
 // Delete appointment
 router.delete('/:id', async (req, res) => {
   try {
-    const appointment = await Appointment.findByPk(req.params.id);
-    if (!appointment) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'Appointment not found'
-      });
+    const deleted = await Appointment.destroy({
+      where: { id: req.params.id }
+    });
+    if (!deleted) {
+      return res.status(404).json({ error: 'Appointment not found' });
     }
-
-    await appointment.destroy();
-    logger.info('Appointment deleted successfully', { appointmentId: req.params.id });
-    res.json({
-      status: 'success',
-      message: 'Appointment deleted successfully'
-    });
+    res.status(204).send();
   } catch (error) {
-    logger.error('Error deleting appointment', { error: error.message });
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to delete appointment'
-    });
+    console.error('Error deleting appointment:', error);
+    res.status(500).json({ error: 'Error deleting appointment' });
   }
 });
 
