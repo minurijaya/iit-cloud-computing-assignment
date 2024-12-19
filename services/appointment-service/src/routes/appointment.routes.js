@@ -3,7 +3,7 @@ const router = express.Router();
 const Appointment = require('../models/appointment.model');
 const { validateAppointment } = require('../validators/appointment.validator');
 const { Op } = require('sequelize');
-const IngestionClient = require('../../../shared/ingestion-client');
+const IngestionClient = require('../clients/ingestion.client');
 
 const ingestionClient = new IngestionClient();
 
@@ -67,11 +67,11 @@ router.post('/', validateAppointment, async (req, res) => {
     try {
       await ingestionClient.ingestData('appointments', {
         id: appointment.id,
-        doctor_id: appointment.doctorId,
         patient_id: appointment.patientId,
-        appointment_date: appointment.appointmentDate,
+        doctor_id: appointment.doctorId,
+        appointment_datetime: appointment.appointmentDateTime,
+        appointment_reason: appointment.appointmentReason,
         status: appointment.status,
-        notes: appointment.notes,
         created_at: appointment.createdAt,
         updated_at: appointment.updatedAt
       });
@@ -83,35 +83,29 @@ router.post('/', validateAppointment, async (req, res) => {
     res.status(201).json(appointment);
   } catch (error) {
     console.error('Error creating appointment:', error);
-    if (error.name === 'SequelizeUniqueConstraintError') {
-      res.status(400).json({ error: 'This time slot is already booked' });
-    } else {
-      res.status(500).json({ error: 'Error creating appointment' });
-    }
+    res.status(500).json({ error: 'Error creating appointment' });
   }
 });
 
 // Update appointment
 router.put('/:id', validateAppointment, async (req, res) => {
   try {
-    const [updated] = await Appointment.update(req.body, {
-      where: { id: req.params.id }
-    });
-    if (!updated) {
+    const appointment = await Appointment.findByPk(req.params.id);
+    if (!appointment) {
       return res.status(404).json({ error: 'Appointment not found' });
     }
-    
-    const appointment = await Appointment.findByPk(req.params.id);
+
+    await appointment.update(req.body);
     
     // Send to ingestion service
     try {
       await ingestionClient.ingestData('appointments', {
         id: appointment.id,
-        doctor_id: appointment.doctorId,
         patient_id: appointment.patientId,
-        appointment_date: appointment.appointmentDate,
+        doctor_id: appointment.doctorId,
+        appointment_datetime: appointment.appointmentDateTime,
+        appointment_reason: appointment.appointmentReason,
         status: appointment.status,
-        notes: appointment.notes,
         created_at: appointment.createdAt,
         updated_at: appointment.updatedAt
       });
@@ -119,15 +113,11 @@ router.put('/:id', validateAppointment, async (req, res) => {
       console.error('Error ingesting updated appointment data:', ingestionError);
       // Continue with the response even if ingestion fails
     }
-    
+
     res.json(appointment);
   } catch (error) {
     console.error('Error updating appointment:', error);
-    if (error.name === 'SequelizeUniqueConstraintError') {
-      res.status(400).json({ error: 'This time slot is already booked' });
-    } else {
-      res.status(500).json({ error: 'Error updating appointment' });
-    }
+    res.status(500).json({ error: 'Error updating appointment' });
   }
 });
 

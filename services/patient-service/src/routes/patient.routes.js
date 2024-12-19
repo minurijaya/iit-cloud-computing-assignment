@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Patient = require('../models/patient.model');
 const { validatePatient } = require('../validators/patient.validator');
-const IngestionClient = require('../../../shared/ingestion-client');
+const IngestionClient = require('../clients/ingestion.client');
 
 const ingestionClient = new IngestionClient();
 
@@ -40,11 +40,16 @@ router.post('/', validatePatient, async (req, res) => {
     try {
       await ingestionClient.ingestData('patients', {
         id: patient.id,
-        name: patient.name,
-        email: patient.email,
+        first_name: patient.firstName,
+        last_name: patient.lastName,
         date_of_birth: patient.dateOfBirth,
         gender: patient.gender,
+        email: patient.email,
         phone: patient.phone,
+        street: patient.street,
+        city: patient.city,
+        state: patient.state,
+        zip_code: patient.zipCode,
         created_at: patient.createdAt,
         updated_at: patient.updatedAt
       });
@@ -67,24 +72,27 @@ router.post('/', validatePatient, async (req, res) => {
 // Update patient
 router.put('/:id', validatePatient, async (req, res) => {
   try {
-    const [updated] = await Patient.update(req.body, {
-      where: { id: req.params.id }
-    });
-    if (!updated) {
+    const patient = await Patient.findByPk(req.params.id);
+    if (!patient) {
       return res.status(404).json({ error: 'Patient not found' });
     }
-    
-    const patient = await Patient.findByPk(req.params.id);
+
+    await patient.update(req.body);
     
     // Send to ingestion service
     try {
       await ingestionClient.ingestData('patients', {
         id: patient.id,
-        name: patient.name,
-        email: patient.email,
+        first_name: patient.firstName,
+        last_name: patient.lastName,
         date_of_birth: patient.dateOfBirth,
         gender: patient.gender,
+        email: patient.email,
         phone: patient.phone,
+        street: patient.street,
+        city: patient.city,
+        state: patient.state,
+        zip_code: patient.zipCode,
         created_at: patient.createdAt,
         updated_at: patient.updatedAt
       });
@@ -92,7 +100,7 @@ router.put('/:id', validatePatient, async (req, res) => {
       console.error('Error ingesting updated patient data:', ingestionError);
       // Continue with the response even if ingestion fails
     }
-    
+
     res.json(patient);
   } catch (error) {
     console.error('Error updating patient:', error);

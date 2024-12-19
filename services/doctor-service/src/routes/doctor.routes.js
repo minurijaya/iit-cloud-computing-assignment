@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Doctor = require('../models/doctor.model');
 const { validateDoctor } = require('../validators/doctor.validator');
-const IngestionClient = require('../../../shared/ingestion-client');
+const IngestionClient = require('../clients/ingestion.client');
 
 const ingestionClient = new IngestionClient();
 
@@ -40,9 +40,11 @@ router.post('/', validateDoctor, async (req, res) => {
     try {
       await ingestionClient.ingestData('doctors', {
         id: doctor.id,
-        name: doctor.name,
+        first_name: doctor.firstName,
+        last_name: doctor.lastName,
+        gender: doctor.gender,
+        specialty: doctor.specialty,
         email: doctor.email,
-        specialization: doctor.specialization,
         created_at: doctor.createdAt,
         updated_at: doctor.updatedAt
       });
@@ -65,32 +67,31 @@ router.post('/', validateDoctor, async (req, res) => {
 // Update doctor
 router.put('/:id', validateDoctor, async (req, res) => {
   try {
-    const [updated] = await Doctor.update(req.body, {
-      where: { id: req.params.id }
-    });
-    
-    if (updated) {
-      const doctor = await Doctor.findByPk(req.params.id);
-      
-      // Send to ingestion service
-      try {
-        await ingestionClient.ingestData('doctors', {
-          id: doctor.id,
-          name: doctor.name,
-          email: doctor.email,
-          specialization: doctor.specialization,
-          created_at: doctor.createdAt,
-          updated_at: doctor.updatedAt
-        });
-      } catch (ingestionError) {
-        console.error('Error ingesting updated doctor data:', ingestionError);
-        // Continue with the response even if ingestion fails
-      }
-      
-      res.json(doctor);
-    } else {
-      res.status(404).json({ error: 'Doctor not found' });
+    const doctor = await Doctor.findByPk(req.params.id);
+    if (!doctor) {
+      return res.status(404).json({ error: 'Doctor not found' });
     }
+
+    await doctor.update(req.body);
+
+    // Send to ingestion service
+    try {
+      await ingestionClient.ingestData('doctors', {
+        id: doctor.id,
+        first_name: doctor.firstName,
+        last_name: doctor.lastName,
+        gender: doctor.gender,
+        specialty: doctor.specialty,
+        email: doctor.email,
+        created_at: doctor.createdAt,
+        updated_at: doctor.updatedAt
+      });
+    } catch (ingestionError) {
+      console.error('Error ingesting updated doctor data:', ingestionError);
+      // Continue with the response even if ingestion fails
+    }
+
+    res.json(doctor);
   } catch (error) {
     console.error('Error updating doctor:', error);
     res.status(500).json({ error: 'Error updating doctor' });

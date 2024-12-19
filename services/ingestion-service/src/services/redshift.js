@@ -32,15 +32,22 @@ const generateInsertSQL = (tableName, records) => {
 };
 
 const executeInsert = async (tableName, records) => {
+  console.log('Executing Redshift query...');
   const { sql, values } = generateInsertSQL(tableName, records);
   
-  return await redshiftClient.executeStatement({
-    Database: process.env.REDSHIFT_DATABASE,
-    SecretArn: process.env.REDSHIFT_SECRET_ARN,
-    WorkgroupName: process.env.REDSHIFT_WORKGROUP_NAME,
-    Sql: sql,
-    Parameters: values
-  });
+  try {
+    const result = await redshiftClient.executeStatement({
+      Database: process.env.REDSHIFT_DATABASE,
+      SecretArn: process.env.REDSHIFT_SECRET_ARN,
+      WorkgroupName: process.env.REDSHIFT_WORKGROUP_NAME,
+      Sql: sql,
+      Parameters: values
+    });
+    return result;
+  } catch (error) {
+    console.error('Redshift query error:', error.message);
+    throw error;
+  }
 };
 
 module.exports = { executeInsert };
