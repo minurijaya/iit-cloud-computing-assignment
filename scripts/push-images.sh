@@ -1,49 +1,41 @@
 #!/bin/bash
 
 # =================================================================
-# Docker Image Push Script
+# Docker Image Pusher
 # =================================================================
 #
 # This script pushes Docker images for all services defined in 
-# config.sh to Docker Hub. Images must be built first using 
-# build-images.sh.
+# config.sh to Docker Hub.
 #
 # Prerequisites:
 # -----------------------------------------------------------------
 # - Docker daemon must be running
-# - Must be logged into Docker Hub (docker login)
 # - Images must be built locally first
+# - Must be logged in to Docker Hub
 #
 # Usage:
 # -----------------------------------------------------------------
-#   Push images with latest tag:
+#   Push with latest tag:
 #     ./scripts/push-images.sh
 #
-#   Push images with specific version:
+#   Push with specific version:
 #     ./scripts/push-images.sh v1.0.0
 #
 # Arguments:
 # -----------------------------------------------------------------
-#   VERSION  Optional. Docker image tag to push (default: 'latest')
+#   VERSION  Optional. Docker image tag (default: 'latest')
 #
 # Services:
 # -----------------------------------------------------------------
-# Services are defined in config.sh. Current services:
-#   - appointment-service
-#   - doctor-service
-#   - patient-service
-#   - ingestion-service
+# Services are defined in config.sh
 #
 # Images:
 # -----------------------------------------------------------------
-# Script will push images with the naming convention:
+# Images will be pushed to Docker Hub with the naming convention:
 #   $DOCKER_USERNAME/<service-name>:<version>
 #
 # Example:
 #   minurijayasooriya97/appointment-service:v1.0.0
-#
-# Note: Make sure you have the necessary permissions to push to
-# these repositories on Docker Hub.
 # =================================================================
 
 # Source common configuration
@@ -85,15 +77,7 @@ VERSION=${1:-latest}
 echo "Starting push process with version: $VERSION"
 echo
 
-# List of services
-SERVICES=(
-    "appointment-service"
-    "doctor-service"
-    "patient-service"
-    "ingestion-service"
-)
-
-# Push each service
+# Push each service from config.sh
 for service in "${SERVICES[@]}"; do
     push_service "$service" "$VERSION"
 done

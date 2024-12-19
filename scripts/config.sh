@@ -9,4 +9,5 @@ SERVICES=(
     "doctor-service"
     "patient-service"
     "ingestion-service"
+    "aggregator-service"
 )

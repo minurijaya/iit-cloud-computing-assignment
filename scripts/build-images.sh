@@ -26,11 +26,7 @@
 #
 # Services:
 # -----------------------------------------------------------------
-# Services are defined in config.sh. Current services:
-#   - appointment-service
-#   - doctor-service
-#   - patient-service
-#   - ingestion-service
+# Services are defined in config.sh
 #
 # Output:
 # -----------------------------------------------------------------
@@ -76,15 +72,7 @@ VERSION=${1:-latest}
 echo "Starting build process with version: $VERSION"
 echo
 
-# List of services
-SERVICES=(
-    "appointment-service"
-    "doctor-service"
-    "patient-service"
-    "ingestion-service"
-)
-
-# Build each service
+# Build each service from config.sh
 for service in "${SERVICES[@]}"; do
     if [ -d "services/$service" ]; then
         build_service "$service" "$VERSION"

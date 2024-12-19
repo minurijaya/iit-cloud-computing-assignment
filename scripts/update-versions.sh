@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # =================================================================
-# Kubernetes Deployment Version Updater
+# Kubernetes Version Updater
 # =================================================================
 #
-# This script updates the Docker image version in all Kubernetes 
-# deployment files for services defined in config.sh.
+# This script updates the Docker image versions in Kubernetes 
+# resource files (deployment.yaml and cronjob.yaml).
 #
 # Prerequisites:
 # -----------------------------------------------------------------
-# - Deployment files must exist in services/<service>/k8s/deployment.yaml
-# - Docker images should be built and pushed with the target version
+# - Service directories must exist
+# - K8s resource files must exist in services/<service>/k8s/
 #
 # Usage:
 # -----------------------------------------------------------------
@@ -19,57 +19,21 @@
 #
 # Arguments:
 # -----------------------------------------------------------------
-#   VERSION  Required. The version tag to update deployments to.
+#   VERSION  Required. Version to update to (e.g., v1.0.0)
 #
-# Services:
+# Files Updated:
 # -----------------------------------------------------------------
-# Services are defined in config.sh. Current services:
-#   - appointment-service
-#   - doctor-service
-#   - patient-service
-#   - ingestion-service
-#
-# Files Modified:
-# -----------------------------------------------------------------
-# For each service, updates:
-#   services/<service>/k8s/deployment.yaml
-#
-# Changes Made:
-# -----------------------------------------------------------------
-# Updates the image version in container spec:
-#   image: $DOCKER_USERNAME/<service>:<version>
-#
-# Example:
-#   image: minurijayasooriya97/appointment-service:v1.0.0
+# For each service in config.sh, updates:
+#   - services/<service>/k8s/deployment.yaml
+#   - services/<service>/k8s/cronjob.yaml
 # =================================================================
 
 # Source common configuration
 source "$(dirname "$0")/config.sh"
 
-# Function to update version in a deployment file
-update_version() {
-    local service=$1
-    local version=${2:-latest}
-    local deployment_file="services/$service/k8s/deployment.yaml"
-    
-    if [ ! -f "$deployment_file" ]; then
-        echo "Warning: Deployment file not found for $service, skipping..."
-        return
-    fi
-    
-    echo "Updating version for $service to $version..."
-    
-    # Use sed to update the image version
-    # For macOS, we need to use '' after -i for compatibility
-    sed -i '' "s|image: $DOCKER_USERNAME/$service:.*|image: $DOCKER_USERNAME/$service:$version|" "$deployment_file"
-    
-    echo "✓ Updated $deployment_file"
-    echo
-}
-
-# Version must be provided as an argument
+# Check if version was provided
 if [ -z "$1" ]; then
-    echo "Error: Version must be provided"
+    echo "Error: Version argument is required"
     echo "Usage: $0 <version>"
     echo "Example: $0 v1.0.0"
     exit 1
@@ -77,16 +41,55 @@ fi
 
 VERSION=$1
 
-echo "Updating all deployment files to version: $VERSION"
+# Function to update version in a file
+update_version() {
+    local file=$1
+    local service=$2
+    
+    echo "Updating $file..."
+    
+    # Use sed to update the image version
+    # This handles both deployment.yaml and cronjob.yaml formats
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS requires an empty string for -i
+        sed -i '' "s|image: $DOCKER_USERNAME/$service:.*|image: $DOCKER_USERNAME/$service:$VERSION|" "$file"
+    else
+        # Linux doesn't
+        sed -i "s|image: $DOCKER_USERNAME/$service:.*|image: $DOCKER_USERNAME/$service:$VERSION|" "$file"
+    fi
+    
+    echo "✓ Updated $file"
+}
+
+echo "Updating Kubernetes resources to version: $VERSION"
 echo
 
-# Update each service's deployment file
+# Update each service
 for service in "${SERVICES[@]}"; do
-    update_version "$service" "$VERSION"
+    echo "Processing $service..."
+    
+    # Check for deployment.yaml
+    deployment_file="services/$service/k8s/deployment.yaml"
+    if [ -f "$deployment_file" ]; then
+        update_version "$deployment_file" "$service"
+    fi
+    
+    # Check for cronjob.yaml
+    cronjob_file="services/$service/k8s/cronjob.yaml"
+    if [ -f "$cronjob_file" ]; then
+        update_version "$cronjob_file" "$service"
+    fi
+    
+    # If neither file exists, show warning
+    if [ ! -f "$deployment_file" ] && [ ! -f "$cronjob_file" ]; then
+        echo "Warning: No deployment.yaml or cronjob.yaml found for $service, skipping..."
+    fi
+    
+    echo
 done
 
-echo "All deployment files updated successfully!"
+echo "All versions updated successfully!"
 echo
 echo "Next step:"
-echo "Apply the changes to Kubernetes:"
+echo "Apply the changes:"
 echo "  ./scripts/apply-k8s.sh"
