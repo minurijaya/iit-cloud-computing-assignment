@@ -1,0 +1,58 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: daily-aggregator
+spec:
+  schedule: "0 1 * * *"  # Run at 1 AM every day
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 600  # Job must start within 10 minutes of scheduled time
+  jobTemplate:
+    spec:
+      backoffLimit: 3  # Retry failed jobs up to 3 times
+      activeDeadlineSeconds: 1800  # Job timeout after 30 minutes
+      template:
+        spec:
+          containers:
+          - name: aggregator
+            image: minurijayasooriya97/aggregator-service:v1.0.0
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "250m"
+              limits:
+                memory: "512Mi"
+                cpu: "500m"
+            env:
+            - name: AWS_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: aws-config
+                  key: region
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: access-key-id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: secret-access-key
+            - name: REDSHIFT_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: redshift-config
+                  key: database
+            - name: REDSHIFT_SECRET_ARN
+              valueFrom:
+                configMapKeyRef:
+                  name: redshift-config
+                  key: secret-arn
+            - name: REDSHIFT_WORKGROUP_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: redshift-config
+                  key: workgroup-name
+          restartPolicy: OnFailure
