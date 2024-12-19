@@ -1,0 +1,61 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: api-gateway
+spec:
+  gatewayClassName: nginx
+  listeners:
+  - name: http
+    port: 8080
+    protocol: HTTP
+    allowedRoutes:
+      namespaces:
+        from: Same
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: doctor-route
+spec:
+  parentRefs:
+  - name: api-gateway
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/doctors
+    backendRefs:
+    - name: doctor-service
+      port: 3001
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: patient-route
+spec:
+  parentRefs:
+  - name: api-gateway
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/patients
+    backendRefs:
+    - name: patient-service
+      port: 8080
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: appointment-route
+spec:
+  parentRefs:
+  - name: api-gateway
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/appointments
+    backendRefs:
+    - name: appointment-service
+      port: 3002
