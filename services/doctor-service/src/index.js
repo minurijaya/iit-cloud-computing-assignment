@@ -6,7 +6,7 @@ const sequelize = require('./config/database');
 const doctorRoutes = require('./routes/doctor.routes');
 
 const app = express();
-const port = process.env.PORT || 3001; // Using 3001 to avoid conflict with patient service
+const port = process.env.PORT || 3000; // Using 3000 to avoid conflict with patient service
 
 // Middleware
 app.use(cors());

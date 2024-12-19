@@ -26,7 +26,7 @@ spec:
         value: /api/doctors
     backendRefs:
     - name: doctor-service
-      port: 3001
+      port: 3000
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -58,4 +58,4 @@ spec:
         value: /api/appointments
     backendRefs:
     - name: appointment-service
-      port: 3002
+      port: 3000

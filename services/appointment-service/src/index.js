@@ -6,7 +6,7 @@ const sequelize = require('./config/database');
 const appointmentRoutes = require('./routes/appointment.routes');
 
 const app = express();
-const port = process.env.PORT || 3002;
+const port = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
