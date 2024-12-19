@@ -1,5 +1,42 @@
 #!/bin/bash
 
+# =================================================================
+# Kubernetes Resource Applicator
+# =================================================================
+#
+# This script applies all Kubernetes resources in the correct order:
+# 1. Infrastructure secrets (AWS, MySQL, Redshift)
+# 2. Service deployments
+#
+# Prerequisites:
+# -----------------------------------------------------------------
+# - kubectl must be installed and configured
+# - Kubernetes cluster must be accessible
+# - Secret files must exist in infrastructure/k8s/
+# - Deployment files must exist in services/<service>/k8s/
+#
+# Usage:
+# -----------------------------------------------------------------
+#   Apply all resources:
+#     ./scripts/apply-k8s.sh
+#
+# Resources Applied:
+# -----------------------------------------------------------------
+# Secrets (in infrastructure/k8s/):
+#   - aws-secret.yaml
+#   - mysql-secret.yaml
+#   - redshift-secret.yaml
+#
+# Deployments (in services/<service>/k8s/):
+#   - appointment-service/deployment.yaml
+#   - doctor-service/deployment.yaml
+#   - patient-service/deployment.yaml
+#   - ingestion-service/deployment.yaml
+#
+# Note: Secrets are applied first to ensure they are available
+# when the services start up.
+# =================================================================
+
 # Source common configuration
 source "$(dirname "$0")/config.sh"
 
@@ -45,13 +82,15 @@ echo "Checking deployment status..."
 echo
 kubectl get deployments
 echo
-echo "To watch deployment status in real-time:"
-echo "kubectl get deployments -w"
+echo "Helpful commands:"
+echo "-----------------------------------------------------------------"
+echo "Watch deployment status:"
+echo "  kubectl get deployments -w"
 echo
-echo "To view pods:"
-echo "kubectl get pods"
+echo "View pods:"
+echo "  kubectl get pods"
 echo
-echo "To view logs for a service:"
+echo "View logs for a service:"
 for service in "${SERVICES[@]}"; do
-    echo "kubectl logs -f deployment/$service"
+    echo "  kubectl logs -f deployment/$service"
 done
