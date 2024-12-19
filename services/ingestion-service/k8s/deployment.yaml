@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: ingestion-service
-        image: minurijayasooriya97/ingestion-service:v1.0.0
+        image: minurijayasooriya97/ingestion-service:v1.0.1
         ports:
         - containerPort: 3000
         env:
