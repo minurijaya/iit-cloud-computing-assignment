@@ -2,7 +2,7 @@
   "name": "appointment-service",
   "version": "1.0.0",
   "description": "Service for managing medical appointments",
-  "main": "src/app.js",
+  "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js"
