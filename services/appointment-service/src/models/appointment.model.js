@@ -8,43 +8,70 @@ const Appointment = sequelize.define('Appointment', {
     autoIncrement: true
   },
   patientId: {
-    type: DataTypes.STRING,
+    type: DataTypes.INTEGER,
     allowNull: false,
     field: 'patient_id',
-    references:{
+    references: {
       model: 'patients',
       key: 'id'
     }
- },
+  },
   doctorId: {
-    type: DataTypes.STRING,
+    type: DataTypes.INTEGER,
     allowNull: false,
     field: 'doctor_id',
-    references:{
+    references: {
       model: 'Doctors',
       key: 'id'
     }
   },
-  appointmentDate: {
+  appointmentDateTime: {
     type: DataTypes.DATE,
     allowNull: false,
-    field: 'appointment_date' 
-  },
-  appointmentTime: {
-    type: DataTypes.TIME,
-    allowNull: false,
-    field: 'appointment_time' 
+    field: 'appointment_datetime',
+    validate: {
+      isDate: true,
+      isFuture(value) {
+        if (value < new Date()) {
+          throw new Error('Appointment date must be in the future');
+        }
+      }
+    }
   },
   appointmentReason: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(1000),
     allowNull: false,
-    field: 'appointment_reason'
+    field: 'appointment_reason',
+    validate: {
+      notEmpty: true,
+      len: [3, 1000]
+    }
   },
-  
+  status: {
+    type: DataTypes.ENUM('scheduled', 'completed', 'cancelled'),
+    allowNull: false,
+    defaultValue: 'scheduled',
+    field: 'status'
+  },
+  notes: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    field: 'notes'
+  }
 }, {
   tableName: 'appointments',
   timestamps: true,
-  underscored: true
+  underscored: true,
+  indexes: [
+    {
+      fields: ['appointment_datetime', 'doctor_id'],
+      name: 'appointment_datetime_doctor_idx'
+    },
+    {
+      fields: ['appointment_datetime', 'patient_id'],
+      name: 'appointment_datetime_patient_idx'
+    }
+  ]
 });
 
 module.exports = Appointment;
