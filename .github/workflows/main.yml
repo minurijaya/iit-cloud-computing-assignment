@@ -64,7 +64,7 @@ jobs:
         run: echo ${{ steps.docker_build.outputs.digest }}
 
   deploy:
-    needs: deploy-image  # Run after deploy-image job
+    needs: publish-images  # Run after publish-images job
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
