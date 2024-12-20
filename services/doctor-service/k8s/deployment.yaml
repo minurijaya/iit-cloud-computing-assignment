@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: doctor-service
-        image: minurijayasooriya97/doctor-service:v1.1.0
+        image: minurijayasooriya97/doctor-service:v1.2.1
         ports:
         - containerPort: 3000
         env:
