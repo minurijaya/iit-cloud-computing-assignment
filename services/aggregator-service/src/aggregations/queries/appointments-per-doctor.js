@@ -8,7 +8,7 @@
 const date = new Date();
 date.setDate(date.getDate() - 1); // Subtract 1 day from the current date to get the previous day's data
 const yesterday = date.toISOString().split('T')[0];
-
+//comment
 const query = `
   BEGIN TRANSACTION;
 
