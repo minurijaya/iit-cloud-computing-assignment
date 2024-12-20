@@ -1,4 +1,4 @@
-name: Build and Deploy Images to Docker Hub
+name: Build, Test, and Deploy
 
 on:
   push:
@@ -6,7 +6,25 @@ on:
       - main # Set a branch to deploy when pushed
 
 jobs:
-  build-and-push:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Build code
+        run: echo "Building code..."
+
+  test:
+    needs: build  # Run after build job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Test code
+        run: echo "Testing code..."
+
+  publish-images:
+    needs: test  # Run after test job
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -44,3 +62,12 @@ jobs:
           
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
+
+  deploy:
+    needs: deploy-image  # Run after deploy-image job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Deploy images
+        run: echo "Deploying images to K8s..."
