@@ -1,32 +1,31 @@
 /**
  * Aggregates the number of appointments per doctor per day
- * Output table: doctor_daily_appointments
+ * Output table:appointments_per_doctor
  * Schedule: Daily at 1 AM
  * Period: Previous day's data
  */
 
+const date = new Date();
+date.setDate(date.getDate() - 1); // Subtract 1 day from the current date to get the previous day's data
+const yesterday = date.toISOString().split('T')[0];
+
 const query = `
   BEGIN TRANSACTION;
 
-  -- Delete existing records for yesterday
-  DELETE FROM doctor_daily_appointments 
-  WHERE date = CURRENT_DATE - 1;
-
   -- Insert new records
-  INSERT INTO doctor_daily_appointments (
-    date,
-    doctor_id,
-    appointment_count,
-    created_at
-  )
-  SELECT 
-    DATE(appointment_datetime) as date,
-    doctor_id,
-    COUNT(*) as appointment_count,
-    GETDATE() as created_at
-  FROM appointments
-  WHERE DATE(appointment_datetime) = CURRENT_DATE - 1
-  GROUP BY DATE(appointment_datetime), doctor_id;
+  INSERT INTO appointments_per_doctor (doctor_name, appointments_count, appointment_datetime)
+SELECT 
+    (d.first_name || ' ' || d.last_name) AS doctor_name,  -- Concatenate first and last names
+    COUNT(a.id) AS number_of_appointments,
+    a.appointment_datetime  -- Include appointment_datetime
+FROM appointments a
+JOIN doctors d ON a.doctor_id = d.id
+WHERE DATE(a.appointment_datetime) = '${yesterday}'  -- Compare only the date part
+GROUP BY 
+    (d.first_name || ' ' || d.last_name), 
+    a.appointment_datetime  -- Group by doctor_name and appointment_datetime
+ORDER BY 
+    number_of_appointments DESC;  -- Optional: order by number of appointments (highest first)
 
   COMMIT;
 `;
