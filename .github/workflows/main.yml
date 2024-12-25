@@ -70,6 +70,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+      - name: Check kubectl
+        run: kubectl get pods
       # - name: Connect to local network via Twingate
       #   uses: twingate/github-action@v1
       #   with:
