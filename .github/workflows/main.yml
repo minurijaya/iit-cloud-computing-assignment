@@ -78,5 +78,5 @@ jobs:
           kubectl apply -f services/appointment-service/k8s/deployment.yaml
           kubectl apply -f services/doctor-service/k8s/deployment.yaml
           kubectl apply -f services/ingestion-service/k8s/deployment.yaml
-          kubectl apply -f services/aggregator-service/k8s/deployment.yaml
+          kubectl apply -f services/aggregator-service/k8s/cronjob.yaml
 
