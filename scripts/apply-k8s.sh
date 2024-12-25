@@ -60,7 +60,10 @@ echo
 # First apply secrets
 echo "Applying secrets..."
 for secret in aws mysql redshift; do
-    apply_resource "infrastructure/k8s/$secret-secret.yaml"
+    secret_file="infrastructure/k8s/$secret-secret.yaml"
+    if [ -f "$secret_file" ]; then
+        apply_resource "$secret_file"
+    fi
 done
 echo "✓ Secrets applied successfully"
 echo
