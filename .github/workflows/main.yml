@@ -70,23 +70,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Check kubectl
-        run: kubectl get pods
-      # - name: Connect to local network via Twingate
-      #   uses: twingate/github-action@v1
-      #   with:
-      #     service-key: ${{ secrets.TWINGATE_SERVICE_KEY }}
-      # - name: Configure SSH credentials
-      #   uses: webfactory/ssh-agent@v0.7.0
-      #   with:
-      #     ssh-private-key: ${{ secrets.MAC_MINI_PRIVATE_KEY }}
-      # - name: Create SSH tunnel
-      #   run: ssh -N -L 18433:localhost:61648 remote@mac-mini.local &
-
-      # - name: Deploy to Kubernetes cluster
-      #   uses: actionhub/kubectl@master
-      #   env:
-      #     KUBECONFIG: ${{ secrets.KUBECONFIG }}
-      #   with:
-      #     args: get pods
-          
+      - name: Update version on deployment configs
+        run: ./scripts/update-versions.sh ${{ github.sha }}
+      - name: Apply deployment configs
+        run: ./scripts/apply-k8s.sh
