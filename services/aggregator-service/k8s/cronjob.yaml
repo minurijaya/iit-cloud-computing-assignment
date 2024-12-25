@@ -16,7 +16,7 @@ spec:
         spec:
           containers:
           - name: aggregator
-            image: minurijayasooriya97/aggregator-service:v1.2.1
+            image: minurijayasooriya97/aggregator-service:IMAGE_VERSION
             resources:
               requests:
                 memory: "256Mi"

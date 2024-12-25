@@ -71,6 +71,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Update version on deployment configs
-        run: ./scripts/update-versions.sh ${{ github.sha }}
+        run: sed -i "s/IMAGE_VERSION/${{ github.sha }}/g" services/*/k8s/*.yaml
       - name: Apply deployment configs
-        run: ./scripts/apply-k8s.sh
+        run: |
+          kubectl apply -f services/patient-service/k8s/deployment.yaml
+          kubectl apply -f services/appointment-service/k8s/deployment.yaml
+          kubectl apply -f services/doctor-service/k8s/deployment.yaml
+          kubectl apply -f services/ingestion-service/k8s/deployment.yaml
+          kubectl apply -f services/aggregator-service/k8s/deployment.yaml
+

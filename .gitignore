@@ -142,3 +142,5 @@ infrastructure/k8s/secrets/
 
 # Keep example secret templates
 !infrastructure/k8s/*-secret.example.yaml
+
+secrets/*
