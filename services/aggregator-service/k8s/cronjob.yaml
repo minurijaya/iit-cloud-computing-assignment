@@ -27,32 +27,32 @@ spec:
             env:
             - name: AWS_REGION
               valueFrom:
-                configMapKeyRef:
-                  name: aws-config
-                  key: region
+                secretKeyRef:
+                  name: aws-credentials
+                  key: AWS_REGION
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
                 secretKeyRef:
                   name: aws-credentials
-                  key: access-key-id
+                  key: AWS_ACCESS_KEY_ID
             - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
                   name: aws-credentials
-                  key: secret-access-key
+                  key: AWS_SECRET_ACCESS_KEY
             - name: REDSHIFT_DATABASE
               valueFrom:
-                configMapKeyRef:
-                  name: redshift-config
-                  key: database
+                secretKeyRef:
+                  name: redshift-secret
+                  key: REDSHIFT_DATABASE
             - name: REDSHIFT_SECRET_ARN
               valueFrom:
-                configMapKeyRef:
-                  name: redshift-config
-                  key: secret-arn
+                secretKeyRef:
+                  name: redshift-secret
+                  key: REDSHIFT_SECRET_ARN
             - name: REDSHIFT_WORKGROUP_NAME
               valueFrom:
-                configMapKeyRef:
-                  name: redshift-config
-                  key: workgroup-name
+                secretKeyRef:
+                  name: redshift-secret
+                  key: REDSHIFT_WORKGROUP_NAME
           restartPolicy: OnFailure
