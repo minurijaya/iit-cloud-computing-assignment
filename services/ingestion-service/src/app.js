@@ -34,6 +34,7 @@ app.post('/ingest', async (req, res) => {
     console.log('Sample record:', JSON.stringify(records[0], null, 2));
 
     const response = await executeInsert(tableName, records);
+    console.log({response});
     console.log(`✓ Successfully ingested ${records.length} records into ${tableName}`);
 
     res.sendSuccess({
