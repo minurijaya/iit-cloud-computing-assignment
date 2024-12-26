@@ -26,7 +26,7 @@ const generateInsertSQL = (tableName, records) => {
   );
   
   return {
-    sql: `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES ${placeholders}`,
+    sql: `INSERT INTO ${tableName}1 (${columns.join(', ')}) VALUES ${placeholders}`,
     values,
   };
 };
