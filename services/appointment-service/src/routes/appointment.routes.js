@@ -66,7 +66,6 @@ router.post('/', validateAppointment, async (req, res) => {
     // Send to ingestion service
     try {
       await ingestionClient.ingestData('appointments', {
-        id: appointment.id,
         patient_id: appointment.patientId,
         doctor_id: appointment.doctorId,
         appointment_datetime: appointment.appointmentDateTime,
