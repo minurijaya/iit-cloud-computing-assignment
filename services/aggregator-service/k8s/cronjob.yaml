@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: daily-aggregator
 spec:
-  schedule: "0 1 * * *"  # Run at 1 AM every day
+  schedule: "*/5 * * * *"  # Run at 1 AM every day
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
