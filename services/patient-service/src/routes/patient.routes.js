@@ -58,7 +58,7 @@ router.post('/', validatePatient, async (req, res) => {
       // Continue with the response even if ingestion fails
     }
     
-    res.status(201).json(patient);
+    res.status(201).json(patient.id);
   } catch (error) {
     console.error('Error creating patient:', error);
     if (error.name === 'SequelizeUniqueConstraintError') {
