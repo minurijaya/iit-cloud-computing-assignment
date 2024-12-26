@@ -65,9 +65,8 @@ const executeInsert = async (tableName, records) => {
       }
     } while (queryStatus !== 'FINISHED');
 
-    console.log('Query completed successfully. Fetching results...');
-    const result = await redshiftClient.getStatementResult({ Id: requestResponse.Id });
-    return result;
+    console.log('Insert query completed successfully');
+    return { success: true, id: requestResponse.Id };
   } catch (error) {
     console.error('Redshift query error:', {
       message: error.message,
