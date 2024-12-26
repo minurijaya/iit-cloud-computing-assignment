@@ -13,7 +13,8 @@ const appointmentSchema = Joi.object({
   appointmentReason: Joi.string().required().trim(),
   status: Joi.string()
     .valid('scheduled', 'completed', 'cancelled')
-    .default('scheduled')
+    .default('scheduled'),
+  notes: Joi.string().required().trim(),
 });
 
 const validateAppointment = (req, res, next) => {
