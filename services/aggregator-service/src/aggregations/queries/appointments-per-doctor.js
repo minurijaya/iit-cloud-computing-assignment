@@ -20,7 +20,7 @@ SELECT
     a.appointment_datetime  -- Include appointment_datetime
 FROM appointments a
 JOIN doctors d ON a.doctor_id = d.id
-WHERE DATE(a.appointment_datetime) = '2024-12-20'  -- Compare only the date part
+WHERE DATE(a.appointment_datetime) = '2024-12-27'  -- Compare only the date part
 GROUP BY 
     (d.first_name || ' ' || d.last_name), 
     a.appointment_datetime  -- Group by doctor_name and appointment_datetime
