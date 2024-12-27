@@ -12,13 +12,13 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Routes
-app.use('/api/appointments', appointmentRoutes);
-
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'healthy' });
 });
+
+// Routes
+app.use('/', appointmentRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

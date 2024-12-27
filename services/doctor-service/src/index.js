@@ -12,13 +12,13 @@ const port = process.env.PORT || 3000; // Using 3000 to avoid conflict with pati
 app.use(cors());
 app.use(express.json());
 
-// Routes
-app.use('/api/doctors', doctorRoutes);
-
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'healthy' });
 });
+
+// Routes
+app.use('/', doctorRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
