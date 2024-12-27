@@ -1,61 +1,32 @@
-apiVersion: gateway.networking.k8s.io/v1
-kind: Gateway
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  name: api-gateway
+  name: api-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
-  gatewayClassName: nginx
-  listeners:
-  - name: http
-    port: 8080
-    protocol: HTTP
-    allowedRoutes:
-      namespaces:
-        from: Same
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: doctor-route
-spec:
-  parentRefs:
-  - name: api-gateway
+  ingressClassName: nginx
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /api/doctors
-    backendRefs:
-    - name: doctor-service
-      port: 3001
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: patient-route
-spec:
-  parentRefs:
-  - name: api-gateway
-  rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /api/patients
-    backendRefs:
-    - name: patient-service
-      port: 3002
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: appointment-route
-spec:
-  parentRefs:
-  - name: api-gateway
-  rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /api/appointments
-    backendRefs:
-    - name: appointment-service
-      port: 3000
+  - http:
+      paths:
+      - path: /api/doctors(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: doctor-service
+            port:
+              number: 3001
+      - path: /api/patients(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: patient-service
+            port:
+              number: 3002
+      - path: /api/appointments(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: appointment-service
+            port:
+              number: 3000
