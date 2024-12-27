@@ -135,7 +135,7 @@ router.delete('/:id', async (req, res) => {
       // Continue with the response even if ingestion fails
     }
 
-    res.json({ message: 'Patient deleted successfully' });
+    res.json({ message: 'Patient deleted successfully !!!' });
   } catch (error) {
     console.error('Error deleting patient:', error);
     res.status(500).json({ error: 'Error deleting patient' });
